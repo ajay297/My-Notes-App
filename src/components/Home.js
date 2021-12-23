@@ -12,7 +12,7 @@ import {
 import ActionButton from 'react-native-action-button';
 import uuid from 'react-native-uuid';
 import Icon from 'react-native-vector-icons/Ionicons';
-import {useDispatch, useSelector} from 'react-redux';
+import {connect} from 'react-redux';
 import {asyncRemoveCurrentUser} from '../redux/action';
 import Card from './Card';
 
@@ -22,64 +22,22 @@ export const dark = {
   text: '#ffd32a',
 };
 
-const Home = ({navigation}) => {
+const Home = props => {
   // const state = useSelector(state => state);
   // console.log(state);
 
-  const currentUser = useSelector(state => state.currentUser);
-  const userId = currentUser?.userId;
-  const notes = useSelector(state =>
-    state.notes[userId] ? state.notes[userId] : [],
-  );
-  console.log(notes);
-
-  const dispatch = useDispatch();
-
-  // useEffect(() => {
-  //   getNotes();
-  // }, []);
+  // const currentUser = useSelector(state => state.currentUser);
+  // const userId = currentUser?.userId;
+  // const notes = useSelector(state =>
+  //   state.notes[userId] ? state.notes[userId] : [],
+  // );
+  // console.log(notes);
 
   const logoutHandler = () => {
-    // try {
-
-    //   console.log('logoutHandler');
-    // } catch (error) {
-    //   console.log(error);
-    // } finally {
-    //   navigation.dispatch(StackActions.replace('Login'));
-    // }
-
-    dispatch(asyncRemoveCurrentUser());
-    navigation.dispatch(StackActions.replace('Login'));
+    // dispatch(asyncRemoveCurrentUser());
+    props.asyncRemoveCurrentUser();
+    props.navigation.dispatch(StackActions.replace('Login'));
   };
-
-  // const getNotes = async () => {
-  //   try {
-  //     console.log('Users : ', JSON.parse(await AsyncStorage.getItem('users')));
-  //     console.log(
-  //       'currentuser : ',
-  //       JSON.parse(await AsyncStorage.getItem('currentuser')),
-  //     );
-  //     console.log('notes : ', JSON.parse(await AsyncStorage.getItem('notes')));
-  //     console.log('\n');
-  //     console.log('\n');
-
-  //     const currentuserid = JSON.parse(
-  //       await AsyncStorage.getItem('currentuser'),
-  //     ).userid;
-
-  //     let oldnotesofcurrentuserid = await AsyncStorage.getItem('notes');
-  //     oldnotesofcurrentuserid = oldnotesofcurrentuserid
-  //       ? JSON.parse(oldnotesofcurrentuserid)[currentuserid]
-  //       : [];
-  //     //check if oldnotesofcurrentuserid is undefined
-  //     if (oldnotesofcurrentuserid) {
-  //       setNotes(oldnotesofcurrentuserid);
-  //     }
-  //   } catch (error) {
-  //     console.log(error);
-  //   }
-  // };
 
   const newNoteId = () => {
     return uuid.v4().toString();
@@ -108,22 +66,10 @@ const Home = ({navigation}) => {
     return <Icon name="log-out-outline" size={34} color={dark.text} />;
   };
 
-  const AddIcon = () => {
-    return (
-      <View>
-        <Icon name="add-outline" size={34} color={dark.text} />
-      </View>
-    );
-  };
-
   return (
     <SafeAreaView style={styles.root}>
       <View style={[styles.header, styles.header]}>
-        <View style={[styles.rightLeftContainer]}>
-          {/* <Pressable onPress={() => logoutHandler()}>
-            <Text style={styles.logout}>Logout</Text>
-          </Pressable> */}
-        </View>
+        <View style={[styles.rightLeftContainer]} />
         <View style={styles.centerContainer}>
           <Text style={[styles.headerText, styles.title]}>Notes</Text>
         </View>
@@ -135,15 +81,14 @@ const Home = ({navigation}) => {
       </View>
       <View style={[styles.Body, styles.body]}>
         <ScrollView>
-          {notes.map(note => {
-            // console.log(note);
+          {props.notes.map(note => {
             return (
               <Card
                 key={note.id}
                 id={note.id}
                 title={note.title}
                 content={note.content}
-                navigation={navigation}
+                navigation={props.navigation}
               />
             );
           })}
@@ -152,17 +97,31 @@ const Home = ({navigation}) => {
           buttonTextStyle={{color: '#ffd32a', fontSize: 34}}
           buttonColor="black"
           onPress={() => {
-            navigation.navigate('NoteForm', {
+            props.navigation.navigate('NoteForm', {
               id: newNoteId(),
               title: '',
               content: '',
-              notes: notes,
+              notes: props.notes,
             });
           }}
         />
       </View>
     </SafeAreaView>
   );
+};
+
+const mapStateToProps = state => {
+  const currentUser = state.currentUser;
+  const userId = currentUser?.userId;
+  const notes = state.notes[userId] ? state.notes[userId] : [];
+  return {
+    notes: notes,
+  };
+};
+const mapDispatchToProps = dispatch => {
+  return {
+    asyncRemoveCurrentUser: () => dispatch(asyncRemoveCurrentUser()),
+  };
 };
 
 const styles = StyleSheet.create({
@@ -206,4 +165,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default Home;
+export default connect(mapStateToProps, mapDispatchToProps)(Home);

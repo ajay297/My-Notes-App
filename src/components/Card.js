@@ -1,12 +1,12 @@
 import React from 'react';
 import {Alert, Pressable, StyleSheet, Text, View} from 'react-native';
-import {useDispatch} from 'react-redux';
+import {connect} from 'react-redux';
 import {asyncDeleteNote} from '../redux/action';
 
 const Card = props => {
   const {id, title, content} = props;
 
-  const dispatch = useDispatch();
+  // const dispatch = useDispatch();
 
   const deleteNote = async () => {
     // try {
@@ -30,7 +30,8 @@ const Card = props => {
     //   props.navigation.dispatch(StackActions.replace('Home'));
     // }
 
-    dispatch(asyncDeleteNote(id));
+    // props.dispatch(asyncDeleteNote(id));
+    props.asyncDeleteNote(id);
     // props.navigation.dispatch(StackActions.replace('Home'));
   };
 
@@ -74,7 +75,11 @@ const Card = props => {
     </View>
   );
 };
-
+const mapDispatchToProps = dispatch => {
+  return {
+    asyncDeleteNote: id => dispatch(asyncDeleteNote(id)),
+  };
+};
 const styles = StyleSheet.create({
   root: {
     paddingLeft: 10,
@@ -94,4 +99,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default Card;
+export default connect(null, mapDispatchToProps)(Card);

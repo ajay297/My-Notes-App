@@ -9,14 +9,14 @@ import {
   TextInput,
   View,
 } from 'react-native';
-import {useDispatch, useSelector} from 'react-redux';
+import {connect, useSelector} from 'react-redux';
 import {
   asyncAddUsers,
   asyncfetchData,
   asyncUpdateCurrentUser,
 } from '../redux/action';
 
-const Login = ({navigation}) => {
+const Login = props => {
   const [userId, setUserId] = useState('');
   const [password, setPassword] = useState('');
   const users = useSelector(state => state.users);
@@ -25,19 +25,18 @@ const Login = ({navigation}) => {
   //   console.log('value', value);
   // });
 
-  const dispatch = useDispatch();
-
   useEffect(() => {
     async function checkCurrentUser() {
       const currentUser = await AsyncStorage.getItem('currentuser');
       console.log('currentUser1', currentUser);
-      dispatch(asyncfetchData());
+      // dispatch(asyncfetchData());
+      props.asyncfetchData();
       console.log('currentUser2', currentUser);
       if (!currentUser) {
-        navigation.navigate('Login');
+        props.navigation.navigate('Login');
         return;
       }
-      navigation.navigate('Home');
+      props.navigation.navigate('Home');
     }
     checkCurrentUser();
   }, []);
@@ -46,15 +45,17 @@ const Login = ({navigation}) => {
       user => user.userId === userId && user.password === password,
     );
     //current user update
-    dispatch(asyncUpdateCurrentUser(userId, password));
+    // dispatch(asyncUpdateCurrentUser(userId, password));
+    props.asyncUpdateCurrentUser(userId, password);
     if (!user) {
-      await dispatch(asyncAddUsers(userId, password));
+      // await dispatch(asyncAddUsers(userId, password));
+      props.asyncAddUsers(userId, password);
       Alert.alert('Success!', 'New user registered.');
     } else {
       Alert.alert('Success!', 'User logged in.');
     }
 
-    navigation.dispatch(StackActions.replace('Home'));
+    props.navigation.dispatch(StackActions.replace('Home'));
   };
 
   const {colors} = useTheme();
@@ -80,6 +81,21 @@ const Login = ({navigation}) => {
       </Pressable>
     </View>
   );
+};
+const mapStateToProps = state => {
+  return {
+    users: state.users,
+  };
+};
+
+const mapDispatchToProps = dispatch => {
+  return {
+    asyncAddUsers: (userId, password) =>
+      dispatch(asyncAddUsers(userId, password)),
+    asyncfetchData: () => dispatch(asyncfetchData()),
+    asyncUpdateCurrentUser: (userId, password) =>
+      dispatch(asyncUpdateCurrentUser(userId, password)),
+  };
 };
 
 const styles = StyleSheet.create({
@@ -120,4 +136,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default Login;
+export default connect(mapStateToProps, mapDispatchToProps)(Login);
